@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id           String   @id @default(cuid())
+  type         String   // "INCOME" or "EXPENSE"
+  category     String   // Site Visit, Fuel, Entertainment, Utilities, Camera Setup, Opening Balance, etc.
+  amount       Float
+  description  String
+  personName   String?  // Technician / Client / Owner
+  paymentMode  String   @default("CASH") // CASH, JAZZCASH, EASYPAISA, BANK
+  slipNumber   String?  // Receipt or Bill No
+  receiptImage String?  // Base64 encoded or image path
+  date         DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model DayClosing {
+  id               String   @id @default(cuid())
+  date             DateTime @default(now())
+  closingDateStr   String   @unique // "YYYY-MM-DD"
+  calculatedCash   Float    // Total cash in hand calculated by system before closing
+  cashWithdrawn    Float    // Cash taken by owner (e.g. profit withdrawal / bank deposit)
+  cashRetained     Float    // Cash left in drawer (which automatically becomes next day's opening balance)
+  closedBy         String?  // Admin / Manager Name
+  notes            String?  // Remarks / Notes
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
