@@ -601,26 +601,21 @@ export default function Dashboard() {
                 <Menu className="h-5 w-5" />
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logodanibro.svg"
                   alt="Danibro Logo"
-                  className="h-6 sm:h-7 w-auto object-contain transition-transform hover:scale-105"
+                  className="h-6 sm:h-7 w-auto object-contain transition-transform hover:scale-105 shrink-0"
                 />
-                <div className="flex flex-col lg:hidden leading-none">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#2041ce] dark:text-blue-400">
-                    Petty Cash
-                  </span>
-                  <span className="text-[9px] font-bold text-slate-500 tabular-nums">
-                    {formatCurrency(stats.cashInHand)}
-                  </span>
-                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#2041ce] dark:text-blue-400 hidden xs:inline sm:inline lg:hidden shrink-0">
+                  Petty Cash
+                </span>
               </div>
             </div>
 
             {/* Top Right Action Buttons (Clean & Prominent) */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
               <button
                 onClick={() => setIsClosingModalOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-amber-100/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:from-amber-100 hover:to-amber-200/70 transition active:scale-95 dark:border-amber-700/60 dark:from-amber-950/50 dark:to-amber-900/40 dark:text-amber-200"
