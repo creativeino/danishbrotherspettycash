@@ -620,10 +620,10 @@ export default function Dashboard() {
             </div>
 
             {/* Top Right Action Buttons (Clean & Prominent) */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setIsClosingModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-amber-100/60 px-2.5 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:from-amber-100 hover:to-amber-200/70 transition active:scale-95 dark:border-amber-700/60 dark:from-amber-950/50 dark:to-amber-900/40 dark:text-amber-200"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-amber-100/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:from-amber-100 hover:to-amber-200/70 transition active:scale-95 dark:border-amber-700/60 dark:from-amber-950/50 dark:to-amber-900/40 dark:text-amber-200"
                 title="Close Day & Handover Drawer"
               >
                 <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 shrink-0" />
@@ -639,21 +639,13 @@ export default function Dashboard() {
                 <span>Opening</span>
               </button>
 
+              {/* Single Combined Add Entry Button */}
               <button
                 onClick={() => openAddModal("EXPENSE")}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:from-rose-700 hover:to-rose-800 active:scale-95 transition"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#2041ce] via-indigo-600 to-blue-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-blue-600/25 hover:from-blue-700 hover:to-indigo-800 active:scale-95 transition"
               >
-                <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                <span>Expense</span>
-              </button>
-
-              <button
-                onClick={() => openAddModal("INCOME", "Site Visit Charges (Inspection/Setup)")}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#2041ce] to-blue-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:from-blue-700 hover:to-blue-800 active:scale-95 transition"
-              >
-                <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">Site Visit</span>
-                <span className="sm:hidden">Visit</span>
+                <PlusCircle className="h-4 w-4 shrink-0" />
+                <span>Add Entry</span>
               </button>
             </div>
           </div>
