@@ -588,102 +588,104 @@ export default function Dashboard() {
 
       {/* Main Container */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        {/* Top Header Navbar */}
-        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1120]/95 shadow-2xs">
-          <div className="flex flex-col gap-2.5 px-3 py-2.5 sm:px-6 sm:py-3">
-            {/* Top Row: Menu & Logo on left, Quick Action Buttons on right */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <button
-                  onClick={() => setIsSidebarOpen(true)}
-                  aria-label="Open sidebar menu"
-                  className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 lg:hidden dark:border-slate-700 dark:text-slate-300 shrink-0"
-                >
-                  <Menu className="h-5 w-5" />
-                </button>
+        {/* Top Header Navbar - Redesigned as a Distinct Command & Action Deck */}
+        <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 backdrop-blur-md dark:border-slate-800/90 dark:bg-[#0b1120]/95 shadow-sm">
+          {/* Top Row: Brand, Drawer Balance Pill (Mobile), and Action Buttons */}
+          <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 sm:px-6 sm:py-3 border-b border-slate-100 dark:border-slate-800/60">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                aria-label="Open sidebar menu"
+                className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-100/80 active:scale-95 transition lg:hidden dark:border-slate-700 dark:text-slate-300 shrink-0 shadow-2xs"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
 
-                <div className="flex items-center gap-1.5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/logodanibro.svg"
-                    alt="Danibro Logo"
-                    className="h-6 sm:h-7 w-auto object-contain"
-                  />
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#2041ce] lg:hidden">
+              <div className="flex items-center gap-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logodanibro.svg"
+                  alt="Danibro Logo"
+                  className="h-6 sm:h-7 w-auto object-contain transition-transform hover:scale-105"
+                />
+                <div className="flex flex-col lg:hidden leading-none">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#2041ce] dark:text-blue-400">
                     Petty Cash
                   </span>
+                  <span className="text-[9px] font-bold text-slate-500 tabular-nums">
+                    {formatCurrency(stats.cashInHand)}
+                  </span>
                 </div>
-
-                {/* Desktop Search Bar (hidden on mobile, visible on sm and up) */}
-                <div className="relative hidden sm:block flex-1 max-w-xs sm:max-w-sm ml-2">
-                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search ledger entries..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-[#2041ce] focus:outline-none focus:ring-1 focus:ring-[#2041ce] dark:border-slate-800 dark:bg-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => setIsClosingModalOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-amber-300 bg-amber-50 px-2 py-1.5 text-[11px] sm:text-xs font-bold text-amber-800 shadow-2xs hover:bg-amber-100 transition dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300"
-                  title="Close Day & Handover Drawer"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                  <span className="hidden md:inline">Close Day & Handover</span>
-                  <span className="md:hidden">Close Day</span>
-                </button>
-
-                <button
-                  onClick={() => openAddModal("INCOME", "Opening Cash Balance")}
-                  className="hidden xl:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                >
-                  <Sun className="h-3.5 w-3.5 text-amber-500" />
-                  <span>Opening</span>
-                </button>
-
-                <button
-                  onClick={() => openAddModal("EXPENSE")}
-                  className="inline-flex items-center gap-1 rounded-xl bg-rose-600 px-2 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-xs hover:bg-rose-700 transition"
-                >
-                  <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span>Expense</span>
-                </button>
-
-                <button
-                  onClick={() => openAddModal("INCOME", "Site Visit Charges (Inspection/Setup)")}
-                  className="inline-flex items-center gap-1 rounded-xl bg-[#2041ce] px-2 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
-                >
-                  <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span className="hidden sm:inline">Site Visit</span>
-                  <span className="sm:hidden">Visit</span>
-                </button>
               </div>
             </div>
 
-            {/* Dedicated Mobile Full-Width Search Bar */}
-            <div className="block sm:hidden w-full pt-0.5">
-              <div className="relative w-full">
-                <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search ledger (person, category, description)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300/80 bg-slate-50 pl-10 pr-4 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-[#2041ce] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2041ce]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-                />
-                {searchQuery && (
+            {/* Top Right Action Buttons (Clean & Prominent) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <button
+                onClick={() => setIsClosingModalOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-amber-100/60 px-2.5 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:from-amber-100 hover:to-amber-200/70 transition active:scale-95 dark:border-amber-700/60 dark:from-amber-950/50 dark:to-amber-900/40 dark:text-amber-200"
+                title="Close Day & Handover Drawer"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                <span className="hidden md:inline">Close Day & Handover</span>
+                <span className="md:hidden">Close Day</span>
+              </button>
+
+              <button
+                onClick={() => openAddModal("INCOME", "Opening Cash Balance")}
+                className="hidden xl:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              >
+                <Sun className="h-3.5 w-3.5 text-amber-500" />
+                <span>Opening</span>
+              </button>
+
+              <button
+                onClick={() => openAddModal("EXPENSE")}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:from-rose-700 hover:to-rose-800 active:scale-95 transition"
+              >
+                <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                <span>Expense</span>
+              </button>
+
+              <button
+                onClick={() => openAddModal("INCOME", "Site Visit Charges (Inspection/Setup)")}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#2041ce] to-blue-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:from-blue-700 hover:to-blue-800 active:scale-95 transition"
+              >
+                <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden sm:inline">Site Visit</span>
+                <span className="sm:hidden">Visit</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Standalone Distinct Search Command Bar */}
+          <div className="bg-slate-50/70 dark:bg-[#070b14]/70 px-3.5 py-2 sm:px-6">
+            <div className="relative flex items-center">
+              <div className="pointer-events-none absolute left-3 flex items-center gap-1.5 text-slate-400">
+                <Search className="h-4 w-4 text-[#2041ce]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 border-r border-slate-200 dark:border-slate-700 pr-2 hidden sm:inline">
+                  Search
+                </span>
+              </div>
+              <input
+                type="text"
+                placeholder="Search transactions, client names, staff, bills, description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-slate-200/90 bg-white py-2 pl-9 sm:pl-24 pr-16 sm:pr-24 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:border-[#2041ce] focus:outline-none focus:ring-2 focus:ring-[#2041ce]/15 dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white shadow-2xs transition"
+              />
+              <div className="absolute right-2 flex items-center gap-1.5">
+                {searchQuery ? (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                    className="rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-300"
                   >
-                    ×
+                    Clear ✕
                   </button>
+                ) : (
+                  <span className="rounded-md border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 hidden sm:inline">
+                    Ledger Filter
+                  </span>
                 )}
               </div>
             </div>
