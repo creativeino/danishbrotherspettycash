@@ -589,23 +589,9 @@ export default function Dashboard() {
       {/* Main Container */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Top Header Navbar */}
-        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1120]/95">
-          <div className="flex flex-col gap-2 px-3 py-2 sm:px-6 sm:py-3">
-            {/* Mobile-only Top Search Bar row */}
-            <div className="block sm:hidden">
-              <div className="relative w-full">
-                <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search transactions, staff, description..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/90 pl-10 pr-3 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-[#2041ce] focus:outline-none focus:ring-1 focus:ring-[#2041ce] dark:border-slate-800 dark:bg-slate-900 dark:text-white shadow-2xs"
-                />
-              </div>
-            </div>
-
-            {/* Main Header Row with menu, brand logo, desktop search, and action buttons */}
+        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1120]/95 shadow-2xs">
+          <div className="flex flex-col gap-2.5 px-3 py-2.5 sm:px-6 sm:py-3">
+            {/* Top Row: Menu & Logo on left, Quick Action Buttons on right */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <button
@@ -616,21 +602,24 @@ export default function Dashboard() {
                   <Menu className="h-5 w-5" />
                 </button>
 
-                <div className="flex items-center gap-2 lg:hidden">
+                <div className="flex items-center gap-1.5">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/logodanibro.svg"
                     alt="Danibro Logo"
-                    className="h-6 w-auto object-contain"
+                    className="h-6 sm:h-7 w-auto object-contain"
                   />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#2041ce] lg:hidden">
+                    Petty Cash
+                  </span>
                 </div>
 
                 {/* Desktop Search Bar (hidden on mobile, visible on sm and up) */}
-                <div className="relative hidden sm:block flex-1 max-w-xs sm:max-w-sm">
+                <div className="relative hidden sm:block flex-1 max-w-xs sm:max-w-sm ml-2">
                   <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search ledger..."
+                    placeholder="Search ledger entries..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-[#2041ce] focus:outline-none focus:ring-1 focus:ring-[#2041ce] dark:border-slate-800 dark:bg-slate-900 dark:text-white"
@@ -639,10 +628,10 @@ export default function Dashboard() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() => setIsClosingModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-800 shadow-2xs hover:bg-amber-100 transition dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300"
+                  className="inline-flex items-center gap-1 rounded-xl border border-amber-300 bg-amber-50 px-2 py-1.5 text-[11px] sm:text-xs font-bold text-amber-800 shadow-2xs hover:bg-amber-100 transition dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300"
                   title="Close Day & Handover Drawer"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 shrink-0" />
@@ -660,7 +649,7 @@ export default function Dashboard() {
 
                 <button
                   onClick={() => openAddModal("EXPENSE")}
-                  className="inline-flex items-center gap-1 rounded-xl bg-rose-600 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 transition"
+                  className="inline-flex items-center gap-1 rounded-xl bg-rose-600 px-2 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-xs hover:bg-rose-700 transition"
                 >
                   <PlusCircle className="h-3.5 w-3.5 shrink-0" />
                   <span>Expense</span>
@@ -668,12 +657,34 @@ export default function Dashboard() {
 
                 <button
                   onClick={() => openAddModal("INCOME", "Site Visit Charges (Inspection/Setup)")}
-                  className="inline-flex items-center gap-1 rounded-xl bg-[#2041ce] px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                  className="inline-flex items-center gap-1 rounded-xl bg-[#2041ce] px-2 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
                 >
                   <PlusCircle className="h-3.5 w-3.5 shrink-0" />
                   <span className="hidden sm:inline">Site Visit</span>
                   <span className="sm:hidden">Visit</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Dedicated Mobile Full-Width Search Bar */}
+            <div className="block sm:hidden w-full pt-0.5">
+              <div className="relative w-full">
+                <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search ledger (person, category, description)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300/80 bg-slate-50 pl-10 pr-4 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-[#2041ce] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2041ce]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             </div>
           </div>
