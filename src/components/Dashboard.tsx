@@ -587,106 +587,123 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Container */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Top Header Navbar */}
-        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1120]/80">
-          <div className="flex items-center justify-between px-4 py-3 sm:px-6">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="rounded-xl border border-slate-200 p-1.5 text-slate-600 hover:bg-slate-50 lg:hidden dark:border-slate-700 dark:text-slate-300"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
+        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1120]/90">
+          <div className="flex flex-col gap-2.5 px-3 py-2.5 sm:px-6 sm:py-3">
+            {/* Top row with menu, logo, search & quick action */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  aria-label="Open sidebar menu"
+                  className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 lg:hidden dark:border-slate-700 dark:text-slate-300 shrink-0"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
 
-              <div className="relative">
-                <Search className="absolute left-3 top-2 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search ledger..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-48 sm:w-64 rounded-xl border border-slate-200 bg-slate-50/80 pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-[#2041ce] focus:outline-none focus:ring-1 focus:ring-[#2041ce] dark:border-slate-800 dark:bg-slate-900 dark:text-white"
-                />
+                <div className="flex items-center gap-2 lg:hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/logodanibro.svg"
+                    alt="Danibro Logo"
+                    className="h-6 w-auto object-contain"
+                  />
+                </div>
+
+                <div className="relative flex-1 max-w-xs sm:max-w-sm">
+                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search ledger..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-[#2041ce] focus:outline-none focus:ring-1 focus:ring-[#2041ce] dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsClosingModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800 shadow-2xs hover:bg-amber-100 transition dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300"
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 text-amber-600" />
-                <span>Close Day & Handover</span>
-              </button>
+              {/* Top Action Buttons */}
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button
+                  onClick={() => setIsClosingModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-800 shadow-2xs hover:bg-amber-100 transition dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300"
+                  title="Close Day & Handover Drawer"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                  <span className="hidden md:inline">Close Day & Handover</span>
+                  <span className="md:hidden">Close Day</span>
+                </button>
 
-              <button
-                onClick={() => openAddModal("INCOME", "Opening Cash Balance")}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-              >
-                <Sun className="h-3.5 w-3.5 text-amber-500" />
-                <span>Opening</span>
-              </button>
+                <button
+                  onClick={() => openAddModal("INCOME", "Opening Cash Balance")}
+                  className="hidden xl:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  <Sun className="h-3.5 w-3.5 text-amber-500" />
+                  <span>Opening</span>
+                </button>
 
-              <button
-                onClick={() => openAddModal("EXPENSE")}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 transition"
-              >
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span>Expense</span>
-              </button>
+                <button
+                  onClick={() => openAddModal("EXPENSE")}
+                  className="inline-flex items-center gap-1 rounded-xl bg-rose-600 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 transition"
+                >
+                  <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span>Expense</span>
+                </button>
 
-              <button
-                onClick={() => openAddModal("INCOME", "Site Visit Charges (Inspection/Setup)")}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#2041ce] px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
-              >
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span>Site Visit</span>
-              </button>
+                <button
+                  onClick={() => openAddModal("INCOME", "Site Visit Charges (Inspection/Setup)")}
+                  className="inline-flex items-center gap-1 rounded-xl bg-[#2041ce] px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                >
+                  <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Site Visit</span>
+                  <span className="sm:hidden">Visit</span>
+                </button>
+              </div>
             </div>
           </div>
         </header>
 
         {/* Dashboard Content */}
-        <main className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
-          {/* Main 4 Metric Cards (Clean, Compact, Top Drawer Highlight with Hover Motion) */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <main className="flex-1 space-y-4 overflow-y-auto p-3 sm:p-5 lg:p-6">
+          {/* Main 4 Metric Cards */}
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
             {/* Primary Drawer Cash In Hand (Top Highlight) */}
-            <div className="animate-card-in card-hover relative overflow-hidden rounded-xl border border-blue-200/90 bg-gradient-to-br from-blue-50/70 to-indigo-50/40 p-3.5 shadow-2xs dark:border-blue-900/50 dark:from-blue-950/20 dark:to-[#0f172a]">
+            <div className="col-span-2 sm:col-span-1 animate-card-in card-hover relative overflow-hidden rounded-xl border border-blue-200/90 bg-gradient-to-br from-blue-50/80 to-indigo-50/40 p-3 sm:p-3.5 shadow-2xs dark:border-blue-900/50 dark:from-blue-950/20 dark:to-[#0f172a]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#2041ce] dark:text-blue-400">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#2041ce] dark:text-blue-400">
                   Cash In Hand (Drawer)
                 </span>
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2041ce] text-white shadow-xs">
-                  <Banknote className="h-4 w-4" />
+                <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-[#2041ce] text-white shadow-xs">
+                  <Banknote className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </div>
               </div>
-              <div className="mt-2">
-                <h3 className="text-xl font-black tracking-tight tabular-nums text-slate-900 dark:text-white">
+              <div className="mt-1.5 sm:mt-2">
+                <h3 className="text-lg sm:text-xl font-black tracking-tight tabular-nums text-slate-900 dark:text-white">
                   {formatCurrency(stats.cashInHand)}
                 </h3>
-                <div className="mt-0.5 flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                  <CheckCircle2 className="h-3 w-3" />
+                <div className="mt-0.5 flex items-center gap-1 text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
+                  <CheckCircle2 className="h-3 w-3 shrink-0" />
                   Physical Cash Available
                 </div>
               </div>
             </div>
 
             {/* Today's Net Cash Flow */}
-            <div className="animate-card-in card-hover rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-[#0f172a]">
+            <div className="col-span-2 sm:col-span-1 animate-card-in card-hover rounded-xl border border-slate-200/80 bg-white p-3 sm:p-3.5 shadow-2xs dark:border-slate-800 dark:bg-[#0f172a]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Today&apos;s Flow
                 </span>
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+                <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
                   <RefreshCw className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <div className="mt-2">
-                <h3 className="text-xl font-black tracking-tight tabular-nums text-slate-900 dark:text-white">
+              <div className="mt-1.5 sm:mt-2">
+                <h3 className="text-lg sm:text-xl font-black tracking-tight tabular-nums text-slate-900 dark:text-white">
                   {formatCurrency(stats.todayBalance)}
                 </h3>
-                <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-semibold tabular-nums">
+                <div className="mt-0.5 flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold tabular-nums truncate">
                   <span className="text-emerald-600">+{formatCurrency(stats.todayIncome)}</span>
                   <span className="text-slate-300 dark:text-slate-700">/</span>
                   <span className="text-rose-600">-{formatCurrency(stats.todayExpense)}</span>
@@ -695,54 +712,54 @@ export default function Dashboard() {
             </div>
 
             {/* Total Inflow */}
-            <div className="animate-card-in card-hover rounded-xl border border-emerald-100 bg-white p-3.5 shadow-2xs dark:border-emerald-950/40 dark:bg-[#0f172a]">
+            <div className="animate-card-in card-hover rounded-xl border border-emerald-100 bg-white p-3 sm:p-3.5 shadow-2xs dark:border-emerald-950/40 dark:bg-[#0f172a]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                   Total Inflow
                 </span>
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
                   <TrendingUp className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <div className="mt-2">
-                <h3 className="text-xl font-black tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+              <div className="mt-1.5 sm:mt-2">
+                <h3 className="text-base sm:text-xl font-black tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                   {formatCurrency(stats.totalIncome)}
                 </h3>
-                <p className="mt-0.5 text-[11px] font-medium text-emerald-600/80">
+                <p className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-emerald-600/80 truncate">
                   Visits: {formatCurrency(stats.siteVisitIncome)}
                 </p>
               </div>
             </div>
 
             {/* Total Outflow */}
-            <div className="animate-card-in card-hover rounded-xl border border-rose-100 bg-white p-3.5 shadow-2xs dark:border-rose-950/40 dark:bg-[#0f172a]">
+            <div className="animate-card-in card-hover rounded-xl border border-rose-100 bg-white p-3 sm:p-3.5 shadow-2xs dark:border-rose-950/40 dark:bg-[#0f172a]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">
                   Total Expenses
                 </span>
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300">
+                <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300">
                   <TrendingDown className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <div className="mt-2">
-                <h3 className="text-xl font-black tracking-tight tabular-nums text-rose-600 dark:text-rose-400">
+              <div className="mt-1.5 sm:mt-2">
+                <h3 className="text-base sm:text-xl font-black tracking-tight tabular-nums text-rose-600 dark:text-rose-400">
                   {formatCurrency(stats.totalExpense)}
                 </h3>
-                <p className="mt-0.5 text-[11px] font-medium text-rose-600/80">
+                <p className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-rose-600/80 truncate">
                   Operational Costs
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Quick Expense Categories Strip with Hover Feedback */}
+          {/* Quick Expense Categories Strip */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div className="card-hover flex items-center justify-between rounded-xl border border-slate-200/70 bg-white p-2.5 shadow-2xs dark:border-slate-800 dark:bg-[#0f172a]">
-              <div className="flex items-center gap-2">
-                <div className="rounded-md bg-amber-500/10 p-1.5 text-amber-600">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="rounded-md bg-amber-500/10 p-1.5 text-amber-600 shrink-0">
                   <Fuel className="h-3.5 w-3.5" />
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                   Fuel
                 </span>
               </div>
@@ -752,11 +769,11 @@ export default function Dashboard() {
             </div>
 
             <div className="card-hover flex items-center justify-between rounded-xl border border-slate-200/70 bg-white p-2.5 shadow-2xs dark:border-slate-800 dark:bg-[#0f172a]">
-              <div className="flex items-center gap-2">
-                <div className="rounded-md bg-blue-500/10 p-1.5 text-blue-600">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="rounded-md bg-blue-500/10 p-1.5 text-blue-600 shrink-0">
                   <Car className="h-3.5 w-3.5" />
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                   Transit
                 </span>
               </div>
@@ -766,11 +783,11 @@ export default function Dashboard() {
             </div>
 
             <div className="card-hover flex items-center justify-between rounded-xl border border-slate-200/70 bg-white p-2.5 shadow-2xs dark:border-slate-800 dark:bg-[#0f172a]">
-              <div className="flex items-center gap-2">
-                <div className="rounded-md bg-orange-500/10 p-1.5 text-orange-600">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="rounded-md bg-orange-500/10 p-1.5 text-orange-600 shrink-0">
                   <Coffee className="h-3.5 w-3.5" />
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                   Tea & Snacks
                 </span>
               </div>
@@ -780,11 +797,11 @@ export default function Dashboard() {
             </div>
 
             <div className="card-hover flex items-center justify-between rounded-xl border border-slate-200/70 bg-white p-2.5 shadow-2xs dark:border-slate-800 dark:bg-[#0f172a]">
-              <div className="flex items-center gap-2">
-                <div className="rounded-md bg-indigo-500/10 p-1.5 text-indigo-600">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="rounded-md bg-indigo-500/10 p-1.5 text-indigo-600 shrink-0">
                   <Receipt className="h-3.5 w-3.5" />
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                   Utilities
                 </span>
               </div>
@@ -800,19 +817,19 @@ export default function Dashboard() {
             <div className="border-b border-slate-200/80 p-3 sm:px-4 dark:border-slate-800 space-y-2.5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-[#2041ce]" />
+                  <Filter className="h-4 w-4 text-[#2041ce] shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     Ledger Filter ({filteredTransactions.length} records)
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-slate-400">Date Range:</span>
-                  <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold dark:bg-slate-800">
+                <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                  <span className="text-[11px] text-slate-400 shrink-0">Range:</span>
+                  <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold dark:bg-slate-800 shrink-0">
                     {(["all", "today", "week", "month", "custom"] as const).map((mode) => (
                       <button
                         key={mode}
                         onClick={() => setDateFilter(mode)}
-                        className={`rounded-md px-2.5 py-1 text-[11px] capitalize transition ${
+                        className={`rounded-md px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] capitalize transition whitespace-nowrap ${
                           dateFilter === mode
                             ? "bg-white text-slate-900 shadow-xs dark:bg-slate-700 dark:text-white"
                             : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
@@ -828,19 +845,19 @@ export default function Dashboard() {
               {/* Sub-filter row: Payment Mode, Category, and Custom Date Range inputs */}
               <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/60 text-xs">
                 {dateFilter === "custom" && (
-                  <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200 dark:border-slate-800 w-full sm:w-auto">
                     <input
                       type="date"
                       value={customStartDate}
                       onChange={(e) => setCustomStartDate(e.target.value)}
-                      className="rounded bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] border border-slate-200 dark:border-slate-700"
+                      className="rounded bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] border border-slate-200 dark:border-slate-700 flex-1 sm:flex-initial"
                     />
                     <span className="text-slate-400 text-[10px]">to</span>
                     <input
                       type="date"
                       value={customEndDate}
                       onChange={(e) => setCustomEndDate(e.target.value)}
-                      className="rounded bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] border border-slate-200 dark:border-slate-700"
+                      className="rounded bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] border border-slate-200 dark:border-slate-700 flex-1 sm:flex-initial"
                     />
                   </div>
                 )}
@@ -865,7 +882,7 @@ export default function Dashboard() {
                   <select
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="max-w-[200px] truncate rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    className="max-w-[150px] sm:max-w-[200px] truncate rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                   >
                     <option value="ALL">All Categories</option>
                     {uniqueCategories.map((c) => (
@@ -894,7 +911,110 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile Card List View (< md screen) */}
+            <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800/60">
+              {loading ? (
+                <div className="py-10 text-center text-xs text-slate-400">
+                  Loading ledger entries...
+                </div>
+              ) : filteredTransactions.length === 0 ? (
+                <div className="py-12 text-center text-xs text-slate-400">
+                  No transactions found in this view.
+                </div>
+              ) : (
+                filteredTransactions.map((tx) => (
+                  <div key={tx.id} className="p-3.5 space-y-2 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        {getCategoryIcon(tx.category, tx.type)}
+                        <div>
+                          <div className="font-semibold text-xs text-slate-900 dark:text-white">
+                            {tx.category}
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            {new Date(tx.date).toLocaleDateString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        className={`text-sm font-black tabular-nums text-right ${
+                          tx.type === "INCOME"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-rose-600 dark:text-rose-400"
+                        }`}
+                      >
+                        {tx.type === "INCOME" ? "+" : "-"}{" "}
+                        {formatCurrency(tx.amount)}
+                      </div>
+                    </div>
+
+                    {tx.description && (
+                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                        {tx.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-50 dark:border-slate-800/40">
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                        <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-semibold text-slate-700 dark:text-slate-300">
+                          {tx.paymentMode}
+                        </span>
+                        {tx.slipNumber && (
+                          <span className="text-slate-400 font-mono">
+                            #{tx.slipNumber}
+                          </span>
+                        )}
+                        {tx.personName && (
+                          <span className="text-slate-500 font-medium truncate max-w-[120px]">
+                            • {tx.personName}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        {tx.receiptImage && (
+                          <button
+                            onClick={() => setPreviewImage(tx.receiptImage!)}
+                            className="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-1 text-[10px] font-semibold text-[#2041ce] hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300"
+                          >
+                            <Eye className="h-3 w-3" />
+                            Slip
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setVoucherTx(tx)}
+                          className="rounded p-1 text-slate-400 hover:bg-blue-50 hover:text-[#2041ce] dark:hover:bg-blue-950/40"
+                          title="Print Payment Voucher"
+                        >
+                          <Printer className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(tx)}
+                          className="rounded p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40"
+                          title="Edit record"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(tx.id)}
+                          className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                          title="Delete entry"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Table View (>= md screen) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:bg-slate-800/30">
                   <tr>

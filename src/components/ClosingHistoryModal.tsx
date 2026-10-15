@@ -51,21 +51,22 @@ export default function ClosingHistoryModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 my-8 animate-modal-enter">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white p-4 sm:p-6 shadow-2xl dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 my-auto sm:my-8 animate-modal-enter">
+        <div className="flex items-start justify-between border-b border-slate-100 pb-3 mb-4 dark:border-slate-800 gap-2">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-[#2041ce]" />
-              Daily Drawer Closing & Cash Audit History
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-[#2041ce] shrink-0" />
+              <span>Closing & Cash Audit History</span>
             </h2>
-            <p className="text-xs text-slate-500">
-              Audit log of past daily cash drawer handovers, profit withdrawals, and carried balances.
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+              Audit log of past daily cash drawer handovers, withdrawals, and carried balances.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            aria-label="Close dialog"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 shrink-0"
           >
             <X className="h-5 w-5" />
           </button>

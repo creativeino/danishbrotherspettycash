@@ -43,23 +43,24 @@ export default function VoucherModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto print:p-0 print:bg-white print:fixed print:inset-0">
-      <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 my-8 animate-modal-enter print:border-none print:shadow-none print:my-0 print:p-8 print:w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-sm overflow-y-auto print:p-0 print:bg-white print:fixed print:inset-0">
+      <div className="relative w-full max-w-xl rounded-2xl bg-white p-4 sm:p-6 shadow-2xl dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 my-auto sm:my-8 animate-modal-enter print:border-none print:shadow-none print:my-0 print:p-8 print:w-full">
         {/* Screen Action Bar (hidden on print) */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 dark:border-slate-800 print:hidden">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Payment Voucher Preview
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 dark:border-slate-800 print:hidden gap-2">
+          <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">
+            Voucher Preview
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2041ce] px-3.5 py-1.5 text-xs font-semibold text-white shadow hover:bg-blue-700 transition"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2041ce] px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-blue-700 transition"
             >
               <Printer className="h-3.5 w-3.5" />
-              Print Voucher
+              <span>Print</span>
             </button>
             <button
               onClick={onClose}
+              aria-label="Close dialog"
               className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <X className="h-4 w-4" />

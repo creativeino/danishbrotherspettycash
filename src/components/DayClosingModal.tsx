@@ -96,17 +96,18 @@ export default function DayClosingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 my-8 animate-modal-enter">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-lg rounded-2xl bg-white p-4 sm:p-6 shadow-2xl dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 my-auto sm:my-8 animate-modal-enter">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          aria-label="Close dialog"
+          className="absolute right-3.5 top-3.5 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2041ce] dark:bg-blue-950/60 dark:text-blue-400">
+        <div className="flex items-center gap-2.5 sm:gap-3 pr-8">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-50 text-[#2041ce] dark:bg-blue-950/60 dark:text-blue-400 shrink-0">
             <Banknote className="h-5 w-5" />
           </div>
           <div>

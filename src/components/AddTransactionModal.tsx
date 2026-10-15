@@ -190,16 +190,17 @@ export default function AddTransactionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 my-8 animate-modal-enter">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-lg rounded-2xl bg-white p-4 sm:p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 my-auto sm:my-8 animate-modal-enter">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          aria-label="Close dialog"
+          className="absolute right-3.5 top-3.5 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white pr-8">
           {isEditing
             ? "Edit Transaction"
             : type === "EXPENSE"
