@@ -589,9 +589,23 @@ export default function Dashboard() {
       {/* Main Container */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Top Header Navbar */}
-        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1120]/90">
-          <div className="flex flex-col gap-2.5 px-3 py-2.5 sm:px-6 sm:py-3">
-            {/* Top row with menu, logo, search & quick action */}
+        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-[#0b1120]/95">
+          <div className="flex flex-col gap-2 px-3 py-2 sm:px-6 sm:py-3">
+            {/* Mobile-only Top Search Bar row */}
+            <div className="block sm:hidden">
+              <div className="relative w-full">
+                <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search transactions, staff, description..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/90 pl-10 pr-3 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-[#2041ce] focus:outline-none focus:ring-1 focus:ring-[#2041ce] dark:border-slate-800 dark:bg-slate-900 dark:text-white shadow-2xs"
+                />
+              </div>
+            </div>
+
+            {/* Main Header Row with menu, brand logo, desktop search, and action buttons */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <button
@@ -611,7 +625,8 @@ export default function Dashboard() {
                   />
                 </div>
 
-                <div className="relative flex-1 max-w-xs sm:max-w-sm">
+                {/* Desktop Search Bar (hidden on mobile, visible on sm and up) */}
+                <div className="relative hidden sm:block flex-1 max-w-xs sm:max-w-sm">
                   <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
                   <input
                     type="text"
@@ -623,7 +638,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Top Action Buttons */}
+              {/* Action Buttons */}
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <button
                   onClick={() => setIsClosingModalOpen(true)}
