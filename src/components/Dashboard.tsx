@@ -45,7 +45,7 @@ import DayClosingModal from "@/components/DayClosingModal";
 import ClosingHistoryModal from "@/components/ClosingHistoryModal";
 import VoucherModal from "@/components/VoucherModal";
 import LoginScreen from "@/components/auth/LoginScreen";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getLocalDateString, formatDateTime, formatDateOnly } from "@/lib/utils";
 
 interface Transaction {
   id: string;
@@ -89,7 +89,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const now = new Date();
-    setTodayStr(now.toISOString().split("T")[0]);
+    setTodayStr(getLocalDateString(now));
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const oneWeekAgo = today - 7 * 24 * 60 * 60 * 1000;
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
@@ -166,7 +166,8 @@ export default function Dashboard() {
     let todayExpense = 0;
 
     transactions.forEach((tx) => {
-      const isToday = todayStr ? tx.date.startsWith(todayStr) : false;
+      const txLocalDate = getLocalDateString(tx.date);
+      const isToday = Boolean(todayStr && txLocalDate === todayStr);
 
       if (tx.type === "INCOME") {
         totalIncome += tx.amount;
@@ -284,23 +285,18 @@ export default function Dashboard() {
 
       // Date Range filter
       let matchesDate = true;
+      const txLocalDate = getLocalDateString(tx.date);
       const txTime = new Date(tx.date).getTime();
 
       if (dateFilter === "today") {
-        matchesDate = todayStr ? tx.date.startsWith(todayStr) : false;
+        matchesDate = Boolean(todayStr && txLocalDate === todayStr);
       } else if (dateFilter === "week") {
         matchesDate = dateBoundaries.oneWeekAgo ? txTime >= dateBoundaries.oneWeekAgo : true;
       } else if (dateFilter === "month") {
         matchesDate = dateBoundaries.startOfMonth ? txTime >= dateBoundaries.startOfMonth : true;
       } else if (dateFilter === "custom") {
-        if (customStartDate) {
-          const start = new Date(customStartDate).getTime();
-          if (txTime < start) matchesDate = false;
-        }
-        if (customEndDate) {
-          const end = new Date(`${customEndDate}T23:59:59.999Z`).getTime();
-          if (txTime > end) matchesDate = false;
-        }
+        if (customStartDate && txLocalDate < customStartDate) matchesDate = false;
+        if (customEndDate && txLocalDate > customEndDate) matchesDate = false;
       }
 
       return matchesType && matchesSearch && matchesMode && matchesCategory && matchesDate;
@@ -947,11 +943,7 @@ export default function Dashboard() {
                             {tx.category}
                           </div>
                           <div className="text-[10px] text-slate-400">
-                            {new Date(tx.date).toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
+                            {formatDateTime(tx.date)}
                           </div>
                         </div>
                       </div>
@@ -1062,11 +1054,8 @@ export default function Dashboard() {
                         key={tx.id}
                         className="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
                       >
-                        <td className="whitespace-nowrap px-4 py-3 text-slate-500">
-                          {new Date(tx.date).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                          })}
+                        <td className="whitespace-nowrap px-4 py-3 text-slate-500 text-xs">
+                          {formatDateTime(tx.date)}
                         </td>
 
                         <td className="whitespace-nowrap px-4 py-3">

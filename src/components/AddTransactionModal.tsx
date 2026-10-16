@@ -10,6 +10,7 @@ import {
   Camera,
   Image as ImageIcon,
 } from "lucide-react";
+import { getLocalDateString, getLocalTimeString, createKarachiIsoString } from "@/lib/utils";
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -72,6 +73,7 @@ export default function AddTransactionModal({
   const [slipNumber, setSlipNumber] = useState("");
   const [receiptImage, setReceiptImage] = useState<string | null>(null);
   const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -80,7 +82,8 @@ export default function AddTransactionModal({
   // Next.js 16 prerender safe date initialization
   useEffect(() => {
     if (!date) {
-      setDate(new Date().toISOString().split("T")[0]);
+      setDate(getLocalDateString());
+      setTime(getLocalTimeString());
     }
   }, [date]);
 
@@ -95,7 +98,13 @@ export default function AddTransactionModal({
         setPaymentMode(initialData.paymentMode || "CASH");
         setSlipNumber(initialData.slipNumber || "");
         setReceiptImage(initialData.receiptImage || null);
-        setDate(initialData.date ? initialData.date.split("T")[0] : new Date().toISOString().split("T")[0]);
+        if (initialData.date) {
+          setDate(getLocalDateString(initialData.date));
+          setTime(getLocalTimeString(initialData.date));
+        } else {
+          setDate(getLocalDateString());
+          setTime(getLocalTimeString());
+        }
       } else {
         setType(initialType);
         setCategory(defaultCategory || CATEGORIES[initialType][0]);
@@ -105,10 +114,12 @@ export default function AddTransactionModal({
         setPaymentMode("CASH");
         setSlipNumber("");
         setReceiptImage(null);
-        setDate(new Date().toISOString().split("T")[0]);
+        setDate(getLocalDateString());
+        setTime(getLocalTimeString());
       }
     }
   }, [isOpen, initialType, defaultCategory, initialData]);
+
 
   if (!isOpen) return null;
 
@@ -154,6 +165,11 @@ export default function AddTransactionModal({
         : "/api/transactions";
       const method = isEditing ? "PUT" : "POST";
 
+      // Save exact timestamp locked to Karachi timezone (+05:00)
+      const finalDateTimeIso = date
+        ? createKarachiIsoString(date, time || getLocalTimeString())
+        : new Date().toISOString();
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -166,7 +182,7 @@ export default function AddTransactionModal({
           paymentMode,
           slipNumber,
           receiptImage,
-          date: date || new Date().toISOString(),
+          date: finalDateTimeIso,
         }),
       });
 
@@ -266,11 +282,11 @@ export default function AddTransactionModal({
             </select>
           </div>
 
-          {/* Amount & Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Amount, Date & Time */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-                Amount (PKR / Rs) *
+                Amount (PKR) *
               </label>
               <input
                 type="number"
@@ -291,6 +307,17 @@ export default function AddTransactionModal({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+                Time
+              </label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               />
             </div>

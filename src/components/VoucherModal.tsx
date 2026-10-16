@@ -1,7 +1,7 @@
 "use client";
 
 import { Printer, X, Building2, CheckCircle2 } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDateTime } from "@/lib/utils";
 
 interface Transaction {
   id: string;
@@ -34,13 +34,7 @@ export default function VoucherModal({
   };
 
   const isExpense = transaction.type === "EXPENSE";
-  const voucherDate = new Date(transaction.date).toLocaleDateString("en-PK", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const voucherDate = formatDateTime(transaction.date);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-sm overflow-y-auto print:p-0 print:bg-white print:fixed print:inset-0">
