@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserFromCookie } from "@/lib/auth";
 
 // GET all transactions
 export async function GET(request: Request) {
@@ -67,6 +68,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const session = getSessionUserFromCookie(request.headers.get("cookie"));
+
     const newTx = await prisma.transaction.create({
       data: {
         type,
@@ -78,6 +81,9 @@ export async function POST(request: Request) {
         slipNumber: slipNumber || null,
         receiptImage: receiptImage || null,
         date: date ? new Date(date) : new Date(),
+        createdBy: session ? session.username : "danish",
+        createdByName: session ? session.name : "Danish",
+        createdRole: session ? session.role : "ADMIN",
       },
     });
 

@@ -39,13 +39,17 @@ import {
   Edit2,
   History,
   Filter,
+  UserCheck,
 } from "lucide-react";
 import AddTransactionModal from "@/components/AddTransactionModal";
 import DayClosingModal from "@/components/DayClosingModal";
 import ClosingHistoryModal from "@/components/ClosingHistoryModal";
+import MonthlyClosingModal from "@/components/MonthlyClosingModal";
+import StaffAdvanceModal from "@/components/StaffAdvanceModal";
 import VoucherModal from "@/components/VoucherModal";
 import LoginScreen from "@/components/auth/LoginScreen";
 import { formatCurrency, getLocalDateString, formatDateTime, formatDateOnly } from "@/lib/utils";
+import * as XLSX from "xlsx";
 
 interface Transaction {
   id: string;
@@ -58,15 +62,27 @@ interface Transaction {
   slipNumber?: string | null;
   receiptImage?: string | null;
   date: string;
+  createdBy?: string | null;
+  createdByName?: string | null;
+  createdRole?: string | null;
+}
+
+interface CurrentUser {
+  username: string;
+  name: string;
+  role: "ADMIN" | "OPERATOR";
 }
 
 export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isMonthlyModalOpen, setIsMonthlyModalOpen] = useState(false);
+  const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState(false);
   const [voucherTx, setVoucherTx] = useState<Transaction | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [modalType, setModalType] = useState<"EXPENSE" | "INCOME">("EXPENSE");
@@ -97,6 +113,14 @@ export default function Dashboard() {
 
     const auth = localStorage.getItem("danibro_logged_in");
     setIsAuthenticated(auth === "true");
+    const storedUser = localStorage.getItem("danibro_user");
+    if (storedUser) {
+      try {
+        setCurrentUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse stored user", e);
+      }
+    }
   }, []);
 
   const fetchTransactions = async () => {
@@ -120,8 +144,15 @@ export default function Dashboard() {
     }
   }, [isAuthenticated]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth", { method: "DELETE" });
+    } catch (e) {
+      console.error(e);
+    }
     localStorage.removeItem("danibro_logged_in");
+    localStorage.removeItem("danibro_user");
+    setCurrentUser(null);
     setIsAuthenticated(false);
   };
 
@@ -135,6 +166,16 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Failed to delete", err);
     }
+  };
+
+  const canEdit = (tx: Transaction) => {
+    if (!currentUser) return false;
+    if (currentUser.role === "ADMIN") return true;
+    return Boolean(tx.createdBy && tx.createdBy.toLowerCase() === currentUser.username.toLowerCase());
+  };
+
+  const canDelete = () => {
+    return currentUser?.role === "ADMIN";
   };
 
   const openAddModal = (type: "EXPENSE" | "INCOME", category?: string) => {
@@ -165,13 +206,25 @@ export default function Dashboard() {
     let todayIncome = 0;
     let todayExpense = 0;
 
+    // Current Active Month stats
+    let currentMonthIncome = 0;
+    let currentMonthExpense = 0;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
     transactions.forEach((tx) => {
+      const txDate = new Date(tx.date);
+      const isCurrentMonth = txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth;
+
       const txLocalDate = getLocalDateString(tx.date);
       const isToday = Boolean(todayStr && txLocalDate === todayStr);
 
       if (tx.type === "INCOME") {
         totalIncome += tx.amount;
         if (isToday) todayIncome += tx.amount;
+        if (isCurrentMonth) currentMonthIncome += tx.amount;
+
         if (tx.category.toLowerCase().includes("site visit")) {
           siteVisitIncome += tx.amount;
         }
@@ -179,6 +232,8 @@ export default function Dashboard() {
       } else {
         totalExpense += tx.amount;
         if (isToday) todayExpense += tx.amount;
+        if (isCurrentMonth) currentMonthExpense += tx.amount;
+
         const cat = tx.category.toLowerCase();
         if (cat.includes("fuel")) fuelExpense += tx.amount;
         else if (cat.includes("site visit")) siteVisitExpense += tx.amount;
@@ -194,6 +249,9 @@ export default function Dashboard() {
       totalIncome,
       totalExpense,
       netBalance: totalIncome - totalExpense,
+      currentMonthIncome,
+      currentMonthExpense,
+      currentMonthMargin: currentMonthIncome - currentMonthExpense,
       cashInHand,
       todayIncome,
       todayExpense,
@@ -206,49 +264,76 @@ export default function Dashboard() {
     };
   }, [transactions, todayStr]);
 
-  // Export CSV
-  const exportToCSV = () => {
+  // Export to authentic multi-sheet formatted Excel (.xlsx)
+  const exportToExcel = () => {
     if (transactions.length === 0) {
       alert("No data available to export");
       return;
     }
 
-    const headers = [
-      "Date",
-      "Type",
-      "Category",
-      "Description",
-      "Staff/Client",
-      "Payment Mode",
-      "Slip #",
-      "Amount (PKR)",
+    // 1. Transaction Ledger Sheet Data
+    const ledgerData = transactions.map((tx, idx) => ({
+      "Sr #": idx + 1,
+      "Date": formatDateTime(tx.date),
+      "Type": tx.type,
+      "Category": tx.category,
+      "Description": tx.description,
+      "Staff / Client": tx.personName || "—",
+      "Payment Mode": tx.paymentMode,
+      "Slip / Bill #": tx.slipNumber || "—",
+      "Created By": tx.createdByName || "Danish",
+      "Debit / Expense (PKR)": tx.type === "EXPENSE" ? tx.amount : 0,
+      "Credit / Income (PKR)": tx.type === "INCOME" ? tx.amount : 0,
+      "Net Amount (PKR)": tx.type === "INCOME" ? tx.amount : -tx.amount,
+    }));
+
+    // 2. Summary & Financial KPI Sheet Data
+    const summaryData = [
+      { Metric: "Total Income (Credits)", "Amount (PKR)": stats.totalIncome },
+      { Metric: "Total Expense (Debits)", "Amount (PKR)": stats.totalExpense },
+      { Metric: "Net Petty Cash Balance", "Amount (PKR)": stats.netBalance },
+      { Metric: "Current Drawer Cash in Hand", "Amount (PKR)": stats.cashInHand },
+      { Metric: "Today's Income", "Amount (PKR)": stats.todayIncome },
+      { Metric: "Today's Expenses", "Amount (PKR)": stats.todayExpense },
+      { Metric: "Fuel Expenses", "Amount (PKR)": stats.fuelExpense },
+      { Metric: "Site Visit Expenses", "Amount (PKR)": stats.siteVisitExpense },
+      { Metric: "Entertainment Expenses", "Amount (PKR)": stats.entertainmentExpense },
+      { Metric: "Billing / Utilities", "Amount (PKR)": stats.billingExpense },
     ];
 
-    const rows = transactions.map((tx) => [
-      new Date(tx.date).toLocaleDateString(),
-      tx.type,
-      `"${tx.category.replace(/"/g, '""')}"`,
-      `"${tx.description.replace(/"/g, '""')}"`,
-      `"${(tx.personName || "").replace(/"/g, '""')}"`,
-      tx.paymentMode,
-      `"${(tx.slipNumber || "").replace(/"/g, '""')}"`,
-      tx.amount,
-    ]);
+    // Create workbook and append sheets
+    const wb = XLSX.utils.book_new();
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const wsLedger = XLSX.utils.json_to_sheet(ledgerData);
+    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
-      `Danibro_PettyCash_${todayStr || "Export"}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Auto column width adjustment
+    wsLedger["!cols"] = [
+      { wch: 6 },
+      { wch: 18 },
+      { wch: 10 },
+      { wch: 20 },
+      { wch: 35 },
+      { wch: 20 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 22 },
+      { wch: 22 },
+      { wch: 18 },
+    ];
+
+    wsSummary["!cols"] = [
+      { wch: 32 },
+      { wch: 20 },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, wsLedger, "Petty Cash Ledger");
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Financial Summary");
+
+    // Write file directly as authentic .xlsx
+    const fileName = `Danibro_PettyCash_${todayStr || "Export"}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   // Dynamic unique categories for filter dropdown
@@ -359,7 +444,14 @@ export default function Dashboard() {
   }
 
   if (!isAuthenticated) {
-    return <LoginScreen onSuccess={() => setIsAuthenticated(true)} />;
+    return (
+      <LoginScreen
+        onSuccess={(user) => {
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+        }}
+      />
+    );
   }
 
   return (
@@ -508,6 +600,38 @@ export default function Dashboard() {
 
           <button
             onClick={() => {
+              setIsAdvanceModalOpen(true);
+              setIsSidebarOpen(false);
+            }}
+            className="group flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-amber-50 hover:text-amber-700 dark:text-slate-300 dark:hover:bg-amber-950/30 dark:hover:text-amber-300 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition">
+                <UserCheck className="h-3.5 w-3.5" />
+              </div>
+              <span>Staff Advance Ledger</span>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+
+          <button
+            onClick={() => {
+              setIsMonthlyModalOpen(true);
+              setIsSidebarOpen(false);
+            }}
+            className="group flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-indigo-50 hover:text-[#2041ce] dark:text-slate-300 dark:hover:bg-blue-950/30 dark:hover:text-blue-300 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-500/10 text-[#2041ce] group-hover:bg-[#2041ce] group-hover:text-white transition">
+                <Calendar className="h-3.5 w-3.5" />
+              </div>
+              <span>Monthly Closing & P&L</span>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+
+          <button
+            onClick={() => {
               setIsHistoryModalOpen(true);
               setIsSidebarOpen(false);
             }}
@@ -524,7 +648,7 @@ export default function Dashboard() {
 
           <button
             onClick={() => {
-              exportToCSV();
+              exportToExcel();
               setIsSidebarOpen(false);
             }}
             className="group flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300 transition"
@@ -559,25 +683,34 @@ export default function Dashboard() {
         <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/30 m-2 rounded-2xl border">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2041ce] text-white text-xs font-bold shadow-xs">
-                DB
+              <div className={`flex h-7 w-7 items-center justify-center rounded-full text-white text-xs font-bold shadow-xs ${currentUser?.role === "ADMIN" ? "bg-[#2041ce]" : "bg-emerald-600"}`}>
+                {(currentUser?.name || "User").slice(0, 2).toUpperCase()}
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Owner Admin
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  admin@danibrothers.com
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {currentUser?.name || "User"}
+                  </span>
+                  <span className={`rounded px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider ${
+                    currentUser?.role === "ADMIN"
+                      ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                  }`}>
+                    {currentUser?.role === "ADMIN" ? "Admin" : "Operator"}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 capitalize">
+                  @{currentUser?.username || "account"}
                 </span>
               </div>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition border border-rose-200/60 dark:border-rose-900/40"
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition border border-rose-200/60 dark:border-rose-900/40 cursor-pointer"
           >
             <LogOut className="h-3.5 w-3.5" />
-            <span>Sign Out</span>
+            <span>Sign Out ({currentUser?.username || "User"})</span>
           </button>
         </div>
       </aside>
@@ -612,6 +745,32 @@ export default function Dashboard() {
 
             {/* Top Right Action Buttons (Clean & Prominent) */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+              {currentUser && (
+                <div className="hidden sm:flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 px-2.5 py-1 text-xs">
+                  <div className={`h-2 w-2 rounded-full ${currentUser.role === "ADMIN" ? "bg-blue-600" : "bg-emerald-500"}`} />
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{currentUser.name}</span>
+                  <span className="text-[10px] text-slate-400 font-mono">({currentUser.role === "ADMIN" ? "Admin" : "Operator"})</span>
+                </div>
+              )}
+
+              <button
+                onClick={() => setIsAdvanceModalOpen(true)}
+                className="hidden lg:inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50/70 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100 transition active:scale-95 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200 cursor-pointer"
+                title="Manage Staff & Technician Advance Khata"
+              >
+                <UserCheck className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                <span>Staff Advance</span>
+              </button>
+
+              <button
+                onClick={() => setIsMonthlyModalOpen(true)}
+                className="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-indigo-900 shadow-2xs hover:bg-indigo-100 transition active:scale-95 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200 cursor-pointer"
+                title="View Monthly Closing, Revenue & Expense Audit"
+              >
+                <Calendar className="h-3.5 w-3.5 text-[#2041ce] shrink-0" />
+                <span>Monthly P&L</span>
+              </button>
+
               <button
                 onClick={() => setIsClosingModalOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-amber-100/60 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:from-amber-100 hover:to-amber-200/70 transition active:scale-95 dark:border-amber-700/60 dark:from-amber-950/50 dark:to-amber-900/40 dark:text-amber-200"
@@ -722,42 +881,48 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Total Inflow */}
+            {/* This Month's Inflow / Revenue */}
             <div className="animate-card-in card-hover rounded-xl border border-emerald-100 bg-white p-3 sm:p-3.5 shadow-2xs dark:border-emerald-950/40 dark:bg-[#0f172a]">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                  Total Inflow
-                </span>
+                <div>
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                    This Month Inflow
+                  </span>
+                  <span className="block text-[9px] text-slate-400 font-medium">Monthly Revenue</span>
+                </div>
                 <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
                   <TrendingUp className="h-3.5 w-3.5" />
                 </div>
               </div>
               <div className="mt-1.5 sm:mt-2">
                 <h3 className="text-base sm:text-xl font-black tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
-                  {formatCurrency(stats.totalIncome)}
+                  {formatCurrency(stats.currentMonthIncome)}
                 </h3>
-                <p className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-emerald-600/80 truncate">
-                  Visits: {formatCurrency(stats.siteVisitIncome)}
+                <p className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-slate-500 truncate">
+                  All-time: {formatCurrency(stats.totalIncome)}
                 </p>
               </div>
             </div>
 
-            {/* Total Outflow */}
+            {/* This Month's Outflow / Expenses */}
             <div className="animate-card-in card-hover rounded-xl border border-rose-100 bg-white p-3 sm:p-3.5 shadow-2xs dark:border-rose-950/40 dark:bg-[#0f172a]">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">
-                  Total Expenses
-                </span>
+                <div>
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">
+                    This Month Expenses
+                  </span>
+                  <span className="block text-[9px] text-slate-400 font-medium">Monthly Outflow</span>
+                </div>
                 <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300">
                   <TrendingDown className="h-3.5 w-3.5" />
                 </div>
               </div>
               <div className="mt-1.5 sm:mt-2">
                 <h3 className="text-base sm:text-xl font-black tracking-tight tabular-nums text-rose-600 dark:text-rose-400">
-                  {formatCurrency(stats.totalExpense)}
+                  {formatCurrency(stats.currentMonthExpense)}
                 </h3>
-                <p className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-rose-600/80 truncate">
-                  Operational Costs
+                <p className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-slate-500 truncate">
+                  Net margin: <strong className={stats.currentMonthMargin >= 0 ? "text-emerald-600" : "text-rose-600"}>{formatCurrency(stats.currentMonthMargin)}</strong>
                 </p>
               </div>
             </div>
@@ -980,6 +1145,11 @@ export default function Dashboard() {
                             • {tx.personName}
                           </span>
                         )}
+                        {tx.createdByName && (
+                          <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded">
+                            By {tx.createdByName}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-1 shrink-0">
@@ -994,25 +1164,29 @@ export default function Dashboard() {
                         )}
                         <button
                           onClick={() => setVoucherTx(tx)}
-                          className="rounded p-1 text-slate-400 hover:bg-blue-50 hover:text-[#2041ce] dark:hover:bg-blue-950/40"
+                          className="rounded p-1 text-slate-400 hover:bg-blue-50 hover:text-[#2041ce] dark:hover:bg-blue-950/40 cursor-pointer"
                           title="Print Payment Voucher"
                         >
                           <Printer className="h-3.5 w-3.5" />
                         </button>
-                        <button
-                          onClick={() => openEditModal(tx)}
-                          className="rounded p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40"
-                          title="Edit record"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(tx.id)}
-                          className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
-                          title="Delete entry"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {canEdit(tx) && (
+                          <button
+                            onClick={() => openEditModal(tx)}
+                            className="rounded p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40 cursor-pointer"
+                            title="Edit record"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        {canDelete() && (
+                          <button
+                            onClick={() => handleDelete(tx.id)}
+                            className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 cursor-pointer"
+                            title="Delete entry"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1030,6 +1204,7 @@ export default function Dashboard() {
                     <th className="px-4 py-2.5">Description</th>
                     <th className="px-4 py-2.5">Staff / Client</th>
                     <th className="px-4 py-2.5">Payment</th>
+                    <th className="px-4 py-2.5">Added By</th>
                     <th className="px-4 py-2.5 text-right">Amount</th>
                     <th className="px-4 py-2.5 text-center">Receipt</th>
                     <th className="px-4 py-2.5 text-center">Action</th>
@@ -1038,13 +1213,13 @@ export default function Dashboard() {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="py-10 text-center text-slate-400">
+                      <td colSpan={9} className="py-10 text-center text-slate-400">
                         Loading ledger entries...
                       </td>
                     </tr>
                   ) : filteredTransactions.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-400">
+                      <td colSpan={9} className="py-12 text-center text-slate-400">
                         No transactions found in this view.
                       </td>
                     </tr>
@@ -1086,6 +1261,12 @@ export default function Dashboard() {
                           )}
                         </td>
 
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                            {tx.createdByName || "Danish"}
+                          </span>
+                        </td>
+
                         <td
                           className={`whitespace-nowrap px-4 py-3 text-right font-black tabular-nums ${
                             tx.type === "INCOME"
@@ -1115,27 +1296,31 @@ export default function Dashboard() {
                           <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => setVoucherTx(tx)}
-                              className="rounded p-1 text-slate-400 hover:bg-blue-50 hover:text-[#2041ce] dark:hover:bg-blue-950/40"
+                              className="rounded p-1 text-slate-400 hover:bg-blue-50 hover:text-[#2041ce] dark:hover:bg-blue-950/40 cursor-pointer"
                               title="Print Payment Voucher"
                             >
                               <Printer className="h-3.5 w-3.5" />
                             </button>
 
-                            <button
-                              onClick={() => openEditModal(tx)}
-                              className="rounded p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40"
-                              title="Edit record"
-                            >
-                              <Edit2 className="h-3.5 w-3.5" />
-                            </button>
+                            {canEdit(tx) && (
+                              <button
+                                onClick={() => openEditModal(tx)}
+                                className="rounded p-1 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40 cursor-pointer"
+                                title="Edit record"
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
 
-                            <button
-                              onClick={() => handleDelete(tx.id)}
-                              className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
-                              title="Delete entry"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                            {canDelete() && (
+                              <button
+                                onClick={() => handleDelete(tx.id)}
+                                className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 cursor-pointer"
+                                title="Delete entry"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1174,6 +1359,21 @@ export default function Dashboard() {
       <ClosingHistoryModal
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
+      />
+
+      {/* Monthly Closing, Revenue & Expense Audit Modal */}
+      <MonthlyClosingModal
+        isOpen={isMonthlyModalOpen}
+        onClose={() => setIsMonthlyModalOpen(false)}
+        transactions={transactions}
+      />
+
+      {/* Staff & Technician Advance Ledger Modal */}
+      <StaffAdvanceModal
+        isOpen={isAdvanceModalOpen}
+        onClose={() => setIsAdvanceModalOpen(false)}
+        onAdvanceUpdated={fetchTransactions}
+        currentDrawerCash={stats.cashInHand}
       />
 
       {/* Payment / Receipt Voucher Preview Modal */}

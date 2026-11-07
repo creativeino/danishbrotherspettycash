@@ -18,6 +18,9 @@ model Transaction {
   slipNumber   String?  // Receipt or Bill No
   receiptImage String?  // Base64 encoded or image path
   date         DateTime @default(now())
+  createdBy     String?  // username: "danish" | "wahab" | "subhan"
+  createdByName String?  // display name: "Danish" | "Wahab" | "Subhan"
+  createdRole   String?  @default("OPERATOR") // "ADMIN" | "OPERATOR"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -33,4 +36,20 @@ model DayClosing {
   notes            String?  // Remarks / Notes
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+model StaffAdvance {
+  id             String    @id @default(cuid())
+  staffName      String    // e.g. Wahab, Subhan, Tech Asif
+  amountGiven    Float     // Total advance given
+  amountSettled  Float     @default(0) // Settled via bills or returned cash
+  remainingBalance Float   // amountGiven - amountSettled
+  purpose        String    // e.g. Site Visit Material, Bike Fuel Advance
+  status         String    @default("PENDING") // PENDING, PARTIAL, SETTLED
+  dateGiven      DateTime  @default(now())
+  settledAt      DateTime?
+  createdBy      String?   // User who approved/gave advance
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }

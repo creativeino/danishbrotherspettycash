@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserFromCookie } from "@/lib/auth";
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const session = getSessionUserFromCookie(request.headers.get("cookie"));
+
+    // RBAC: Only ADMIN (Danish/Owner) can delete
+    if (!session || session.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Access Denied: Only Admin (Danish/Owner) can delete transactions." },
+        { status: 403 }
+      );
+    }
+
     await prisma.transaction.delete({
       where: { id },
     });
@@ -26,6 +37,36 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    const session = getSessionUserFromCookie(request.headers.get("cookie"));
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized: Please log in." },
+        { status: 401 }
+      );
+    }
+
+    const existing = await prisma.transaction.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 }
+      );
+    }
+
+    // RBAC: Operators can only edit transactions they personally created
+    if (session.role !== "ADMIN") {
+      if (existing.createdBy && existing.createdBy !== session.username) {
+        return NextResponse.json(
+          { error: "Access Denied: Operators can only edit their own entries." },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await request.json();
     const {
       type,
