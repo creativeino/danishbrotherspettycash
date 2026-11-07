@@ -96,6 +96,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [todayStr, setTodayStr] = useState<string>("");
+  const [currentYearMonth, setCurrentYearMonth] = useState<{ year: number; month: number }>({ year: 0, month: 0 });
   const [dateBoundaries, setDateBoundaries] = useState<{
     today: number;
     oneWeekAgo: number;
@@ -106,6 +107,7 @@ export default function Dashboard() {
   useEffect(() => {
     const now = new Date();
     setTodayStr(getLocalDateString(now));
+    setCurrentYearMonth({ year: now.getFullYear(), month: now.getMonth() });
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const oneWeekAgo = today - 7 * 24 * 60 * 60 * 1000;
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
@@ -209,13 +211,11 @@ export default function Dashboard() {
     // Current Active Month stats
     let currentMonthIncome = 0;
     let currentMonthExpense = 0;
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
+    const { year: currentYear, month: currentMonth } = currentYearMonth;
 
     transactions.forEach((tx) => {
       const txDate = new Date(tx.date);
-      const isCurrentMonth = txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth;
+      const isCurrentMonth = currentYear > 0 && txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonth;
 
       const txLocalDate = getLocalDateString(tx.date);
       const isToday = Boolean(todayStr && txLocalDate === todayStr);
@@ -262,7 +262,7 @@ export default function Dashboard() {
       entertainmentExpense,
       billingExpense,
     };
-  }, [transactions, todayStr]);
+  }, [transactions, todayStr, currentYearMonth]);
 
   // Export to authentic multi-sheet formatted Excel (.xlsx)
   const exportToExcel = () => {
