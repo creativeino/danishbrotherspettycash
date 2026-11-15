@@ -469,7 +469,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] text-slate-900 antialiased dark:bg-[#090d16] dark:text-slate-100">
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc] text-slate-900 antialiased dark:bg-[#090d16] dark:text-slate-100">
       {/* Mobile Backdrop Overlay */}
       {isSidebarOpen && (
         <div
@@ -481,7 +481,7 @@ export default function Dashboard() {
 
       {/* Modern High-End Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200/90 bg-white/95 backdrop-blur-md dark:border-slate-800/90 dark:bg-[#0b1120]/95 shadow-xl lg:shadow-none transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200/90 bg-white/95 backdrop-blur-md dark:border-slate-800/90 dark:bg-[#0b1120]/95 shadow-xl lg:shadow-none transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
