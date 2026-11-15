@@ -485,25 +485,62 @@ export default function Dashboard() {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Brand Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/80">
-          <div className="flex flex-col items-start">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logodanibro.svg"
-              alt="Danibro Logo"
-              className="h-8 w-auto object-contain transition-transform hover:scale-105"
-            />
-            <span className="mt-0.5 text-[9px] font-extrabold tracking-widest text-[#2041ce] dark:text-blue-400 uppercase">
-              Petty Cash
-            </span>
+        {/* Brand Header & Top Profile */}
+        <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logodanibro.svg"
+                alt="Danibro Logo"
+                className="h-8 w-auto object-contain transition-transform hover:scale-105"
+              />
+              <span className="mt-0.5 text-[9px] font-extrabold tracking-widest text-[#2041ce] dark:text-blue-400 uppercase">
+                Petty Cash
+              </span>
+            </div>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 lg:hidden dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 lg:hidden dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
-          >
-            <X className="h-5 w-5" />
-          </button>
+
+          {/* User Profile Card & Sign Out at Top of Sidebar */}
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white text-xs font-bold shadow-xs ${currentUser?.role === "ADMIN" ? "bg-[#2041ce]" : "bg-emerald-600"}`}>
+                  {(currentUser?.name || "User").slice(0, 2).toUpperCase()}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                      {currentUser?.name || "User"}
+                    </span>
+                    <span className={`rounded px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+                      currentUser?.role === "ADMIN"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                    }`}>
+                      {currentUser?.role === "ADMIN" ? "Admin" : "Operator"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 capitalize truncate">
+                    @{currentUser?.username || "account"}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="shrink-0 p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900/40 transition cursor-pointer"
+                title="Sign Out"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Quick Drawer Balance Pill */}
@@ -760,10 +797,17 @@ export default function Dashboard() {
             {/* Top Right Action Buttons (Clean & Prominent) */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
               {currentUser && (
-                <div className="hidden sm:flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 px-2.5 py-1 text-xs">
+                <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 px-2 py-1 text-xs">
                   <div className={`h-2 w-2 rounded-full ${currentUser.role === "ADMIN" ? "bg-blue-600" : "bg-emerald-500"}`} />
                   <span className="font-bold text-slate-800 dark:text-slate-200">{currentUser.name}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">({currentUser.role === "ADMIN" ? "Admin" : "Operator"})</span>
+                  <span className="hidden sm:inline text-[10px] text-slate-400 font-mono">({currentUser.role === "ADMIN" ? "Admin" : "Operator"})</span>
+                  <button
+                    onClick={handleLogout}
+                    className="ml-1 p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                    title="Sign Out"
+                  >
+                    <LogOut className="h-3.5 w-3.5 text-rose-500" />
+                  </button>
                 </div>
               )}
 
