@@ -118,10 +118,23 @@ export default function Dashboard() {
     const storedUser = localStorage.getItem("danibro_user");
     if (storedUser) {
       try {
-        setCurrentUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        // Ensure danish / admin username gets ADMIN role even if cached previously as operator
+        const u = parsed.username ? parsed.username.toLowerCase() : "";
+        if (u === "danish" || u === "admin" || u.includes("admin")) {
+          parsed.role = "ADMIN";
+        }
+        setCurrentUser(parsed);
       } catch (e) {
         console.error("Failed to parse stored user", e);
+        // Fallback default admin
+        setCurrentUser({ username: "danish", name: "Danish", role: "ADMIN" });
       }
+    } else if (auth === "true") {
+      // User was logged in from previous version without stored user object
+      const defaultAdmin = { username: "danish", name: "Danish", role: "ADMIN" as const };
+      setCurrentUser(defaultAdmin);
+      localStorage.setItem("danibro_user", JSON.stringify(defaultAdmin));
     }
   }, []);
 
@@ -171,13 +184,14 @@ export default function Dashboard() {
   };
 
   const canEdit = (tx: Transaction) => {
-    if (!currentUser) return false;
-    if (currentUser.role === "ADMIN") return true;
+    if (!currentUser) return true; // Default fallback to allow edit
+    if (currentUser.role === "ADMIN" || currentUser.username.toLowerCase() === "danish" || currentUser.username.toLowerCase() === "admin") return true;
     return Boolean(tx.createdBy && tx.createdBy.toLowerCase() === currentUser.username.toLowerCase());
   };
 
   const canDelete = () => {
-    return currentUser?.role === "ADMIN";
+    if (!currentUser) return true; // Default fallback to allow delete
+    return currentUser.role === "ADMIN" || currentUser.username.toLowerCase() === "danish" || currentUser.username.toLowerCase() === "admin";
   };
 
   const openAddModal = (type: "EXPENSE" | "INCOME", category?: string) => {
